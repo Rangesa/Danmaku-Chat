@@ -41,17 +41,6 @@ class ModMenuIntegration : ModMenuApi {
             )
             y += spacing
 
-            // User Chat toggle
-            addDrawableChild(
-                ButtonWidget.builder(
-                    getEnableText("danmakuchat.config.user_chat", config.shouldShowUserChat())
-                ) { button ->
-                    config.setShowUserChat(!config.shouldShowUserChat())
-                    button.message = getEnableText("danmakuchat.config.user_chat", config.shouldShowUserChat())
-                }.dimensions(centerX - buttonWidth / 2, y, buttonWidth, buttonHeight).build()
-            )
-            y += spacing
-
             // System Chat toggle
             addDrawableChild(
                 ButtonWidget.builder(

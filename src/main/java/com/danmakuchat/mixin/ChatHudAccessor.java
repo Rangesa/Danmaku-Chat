@@ -42,10 +42,11 @@ public class ChatHudAccessor {
         // 設定を確認して、このメッセージタイプを表示するかどうかをチェック
         com.danmakuchat.config.DanmakuConfig config = com.danmakuchat.config.DanmakuConfig.getInstance();
 
-        if (isUserMessage && !config.shouldShowUserChat()) {
-            // ユーザーメッセージだが、ユーザーメッセージが無効
-            return;
-        }
+        // ユーザーチャットの表示設定を削除したため、ユーザーチャットは常に弾幕として表示される
+        // if (isUserMessage && !config.shouldShowUserChat()) {
+        //     // ユーザーメッセージだが、ユーザーメッセージが無効
+        //     return;
+        // }
 
         if (!isUserMessage && !config.shouldShowSystemChat()) {
             // システムメッセージだが、システムメッセージが無効

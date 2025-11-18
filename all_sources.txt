@@ -1,0 +1,1053 @@
+--- C:\Programming\Minecraft\DanmakuChat\src\main\java\com\danmakuchat\DanmakuChat.java ---
+
+package com.danmakuchat;
+
+import com.danmakuchat.command.DanmakuCommand;
+import com.danmakuchat.render.DanmakuRenderer;
+import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
+import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+/**
+ * DanmakuChat - Minecraft 用ニコニコスタイル弾幕チャットオーバーレイ
+ *
+ * このモッドは標準的な Minecraft チャットを、ニコニコ動画のコメントに似た
+ * 弾幕スタイルのオーバーレイに置き換えます。
+ */
+public class DanmakuChat implements ClientModInitializer {
+    public static final String MOD_ID = "danmakuchat";
+    public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
+
+    private static DanmakuRenderer renderer;
+
+    @Override
+    public void onInitializeClient() {
+        LOGGER.info("DanmakuChat を初期化中 - チャットを流しましょう！");
+
+        // レンダラーを初期化
+        renderer = new DanmakuRenderer();
+
+        // HudRenderCallback API を使用して弾幕レンダラーを HUD に登録
+        HudRenderCallback.EVENT.register(renderer::render);
+
+        // クライアントコマンドを登録
+        ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> {
+            DanmakuCommand.register(dispatcher);
+        });
+
+        LOGGER.info("DanmakuChat の初期化が完了しました！レンダラーとコマンドが登録されました。");
+    }
+
+    public static DanmakuRenderer getRenderer() {
+        return renderer;
+    }
+}
+
+
+--- C:\Programming\Minecraft\DanmakuChat\src\main\java\com\danmakuchat\command\DanmakuCommand.java ---
+
+package com.danmakuchat.command;
+
+import com.danmakuchat.config.DanmakuConfig;
+import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.arguments.BoolArgumentType;
+import com.mojang.brigadier.arguments.FloatArgumentType;
+import com.mojang.brigadier.arguments.IntegerArgumentType;
+import com.mojang.brigadier.context.CommandContext;
+import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
+import net.minecraft.text.Text;
+
+import static net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.argument;
+import static net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.literal;
+
+/**
+ * DanmakuChat settings command.
+ */
+public class DanmakuCommand {
+
+    public static void register(CommandDispatcher<FabricClientCommandSource> dispatcher) {
+        dispatcher.register(literal("danmaku")
+            .executes(DanmakuCommand::showStatus)
+            .then(literal("enable")
+                .executes(ctx -> setEnabled(ctx, true)))
+            .then(literal("disable")
+                .executes(ctx -> setEnabled(ctx, false)))
+            .then(literal("system")
+                .then(argument("value", BoolArgumentType.bool())
+                    .executes(ctx -> setSystemChat(ctx, BoolArgumentType.getBool(ctx, "value")))))
+            .then(literal("speed")
+                .then(argument("value", FloatArgumentType.floatArg(0.1f, 5.0f))
+                    .executes(ctx -> setSpeed(ctx, FloatArgumentType.getFloat(ctx, "value")))))
+            .then(literal("lanes")
+                .then(argument("value", IntegerArgumentType.integer(1, 20))
+                    .executes(ctx -> setLanes(ctx, IntegerArgumentType.getInteger(ctx, "value")))))
+            .then(literal("opacity")
+                .then(argument("value", FloatArgumentType.floatArg(0.0f, 1.0f))
+                    .executes(ctx -> setOpacity(ctx, FloatArgumentType.getFloat(ctx, "value")))))
+            .then(literal("size")
+                .then(argument("value", FloatArgumentType.floatArg(0.5f, 2.0f))
+                    .executes(ctx -> setFontSize(ctx, FloatArgumentType.getFloat(ctx, "value")))))
+            .then(literal("vanilla")
+                .then(argument("value", BoolArgumentType.bool())
+                    .executes(ctx -> setVanillaChat(ctx, BoolArgumentType.getBool(ctx, "value")))))
+            .then(literal("reload")
+                .executes(DanmakuCommand::reload))
+        );
+    }
+
+    private static Text getEnableStatusText(boolean enabled) {
+        return Text.translatable(enabled ? "danmakuchat.value.enabled" : "danmakuchat.value.disabled");
+    }
+
+    private static int showStatus(CommandContext<FabricClientCommandSource> ctx) {
+        DanmakuConfig config = DanmakuConfig.getInstance();
+        FabricClientCommandSource source = ctx.getSource();
+
+        source.sendFeedback(Text.translatable("danmakuchat.command.status.main", getEnableStatusText(config.isEnabled())));
+        source.sendFeedback(Text.translatable("danmakuchat.command.status.system", getEnableStatusText(config.shouldShowSystemChat())));
+        source.sendFeedback(Text.translatable("danmakuchat.command.status.vanilla", getEnableStatusText(!config.shouldHideVanillaChat())));
+        source.sendFeedback(Text.translatable("danmakuchat.command.status.speed", config.getScrollSpeed()));
+        source.sendFeedback(Text.translatable("danmakuchat.command.status.lanes", config.getMaxLanes()));
+        source.sendFeedback(Text.translatable("danmakuchat.command.status.opacity", config.getOpacity()));
+        source.sendFeedback(Text.translatable("danmakuchat.command.status.font_size", config.getFontSize()));
+
+        return 1;
+    }
+
+    private static int setEnabled(CommandContext<FabricClientCommandSource> ctx, boolean enabled) {
+        DanmakuConfig.getInstance().setEnabled(enabled);
+        ctx.getSource().sendFeedback(Text.translatable("danmakuchat.command.set.main", getEnableStatusText(enabled)));
+        return 1;
+    }
+
+    private static int setSystemChat(CommandContext<FabricClientCommandSource> ctx, boolean show) {
+        DanmakuConfig.getInstance().setShowSystemChat(show);
+        ctx.getSource().sendFeedback(Text.translatable("danmakuchat.command.set.system", getEnableStatusText(show)));
+        return 1;
+    }
+
+    private static int setSpeed(CommandContext<FabricClientCommandSource> ctx, float speed) {
+        DanmakuConfig.getInstance().setScrollSpeed(speed);
+        ctx.getSource().sendFeedback(Text.translatable("danmakuchat.command.set.speed", speed));
+        return 1;
+    }
+
+    private static int setLanes(CommandContext<FabricClientCommandSource> ctx, int lanes) {
+        DanmakuConfig.getInstance().setMaxLanes(lanes);
+        ctx.getSource().sendFeedback(Text.translatable("danmakuchat.command.set.lanes", lanes));
+        return 1;
+    }
+
+    private static int setOpacity(CommandContext<FabricClientCommandSource> ctx, float opacity) {
+        DanmakuConfig.getInstance().setOpacity(opacity);
+        ctx.getSource().sendFeedback(Text.translatable("danmakuchat.command.set.opacity", opacity));
+        return 1;
+    }
+
+    private static int setFontSize(CommandContext<FabricClientCommandSource> ctx, float size) {
+        DanmakuConfig.getInstance().setFontSize(size);
+        ctx.getSource().sendFeedback(Text.translatable("danmakuchat.command.set.font_size", size));
+        return 1;
+    }
+
+    private static int setVanillaChat(CommandContext<FabricClientCommandSource> ctx, boolean show) {
+        DanmakuConfig.getInstance().setHideVanillaChat(!show);
+        ctx.getSource().sendFeedback(Text.translatable("danmakuchat.command.set.vanilla", getEnableStatusText(show)));
+        return 1;
+    }
+
+    private static int reload(CommandContext<FabricClientCommandSource> ctx) {
+        DanmakuConfig.getInstance().save();
+        ctx.getSource().sendFeedback(Text.translatable("danmakuchat.command.reload"));
+        return 1;
+    }
+}
+
+
+--- C:\Programming\Minecraft\DanmakuChat\src\main\java\com\danmakuchat\config\DanmakuConfig.java ---
+
+package com.danmakuchat.config;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import net.fabricmc.loader.api.FabricLoader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+
+/**
+ * Configuration manager for DanmakuChat.
+ * Handles settings for danmaku display behavior.
+ */
+public class DanmakuConfig {
+    private static DanmakuConfig instance;
+    private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
+    private static final Path CONFIG_PATH = FabricLoader.getInstance().getConfigDir().resolve("danmakuchat.json");
+    public static final Logger LOGGER = LoggerFactory.getLogger("DanmakuChat");
+
+    // Display settings
+    private boolean enabled = true;
+    private boolean hideVanillaChat = true;
+    private float scrollSpeed = 1.0f;
+    private float displayDuration = 5.0f;
+    private int maxLanes = 10;
+    private float opacity = 0.8f;
+    private float fontSize = 1.0f;
+
+    // External chat integration
+    private boolean discordIntegration = false;
+
+    // Message filtering settings
+    private boolean showSystemChat = false;  // System messages OFF by default
+
+    private DanmakuConfig() {}
+
+    public static DanmakuConfig getInstance() {
+        if (instance == null) {
+            instance = load();
+        }
+        return instance;
+    }
+
+    /**
+     * Loads the configuration from the file, or creates a default one if it doesn't exist.
+     */
+    private static DanmakuConfig load() {
+        if (Files.exists(CONFIG_PATH)) {
+            try {
+                String json = Files.readString(CONFIG_PATH);
+                DanmakuConfig config = GSON.fromJson(json, DanmakuConfig.class);
+                if (config != null) {
+                    return config;
+                }
+            } catch (IOException e) {
+                LOGGER.error("Failed to load DanmakuChat config: " + e.getMessage());
+            }
+        }
+        // If the file doesn't exist or loading fails, return default settings
+        DanmakuConfig defaultConfig = new DanmakuConfig();
+        defaultConfig.save();
+        return defaultConfig;
+    }
+
+    /**
+     * Saves the current configuration to the file.
+     */
+    public void save() {
+        try {
+            String json = GSON.toJson(this);
+            Files.writeString(CONFIG_PATH, json);
+        } catch (IOException e) {
+            LOGGER.error("Failed to save DanmakuChat config: " + e.getMessage());
+        }
+    }
+
+    // Getters
+    public boolean isEnabled() { return enabled; }
+    public boolean shouldHideVanillaChat() { return hideVanillaChat; }
+    public float getScrollSpeed() { return scrollSpeed; }
+    public float getDisplayDuration() { return displayDuration; }
+    public int getMaxLanes() { return maxLanes; }
+    public float getOpacity() { return opacity; }
+    public float getFontSize() { return fontSize; }
+    public boolean isDiscordIntegrationEnabled() { return discordIntegration; }
+    public boolean shouldShowSystemChat() { return showSystemChat; }
+
+    // Setters (auto-save on change)
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+        save();
+    }
+    public void setHideVanillaChat(boolean hide) {
+        this.hideVanillaChat = hide;
+        save();
+    }
+    public void setScrollSpeed(float speed) {
+        this.scrollSpeed = Math.max(0.1f, Math.min(5.0f, speed));
+        save();
+    }
+    public void setDisplayDuration(float duration) {
+        this.displayDuration = Math.max(1.0f, Math.min(30.0f, duration));
+        save();
+    }
+    public void setMaxLanes(int lanes) {
+        this.maxLanes = Math.max(1, Math.min(20, lanes));
+        save();
+    }
+    public void setOpacity(float opacity) {
+        this.opacity = Math.max(0.0f, Math.min(1.0f, opacity));
+        save();
+    }
+    public void setFontSize(float size) {
+        this.fontSize = Math.max(0.5f, Math.min(2.0f, size));
+        save();
+    }
+    public void setDiscordIntegration(boolean enabled) {
+        this.discordIntegration = enabled;
+        save();
+    }
+    public void setShowSystemChat(boolean show) {
+        this.showSystemChat = show;
+        save();
+    }
+}
+
+
+--- C:\Programming\Minecraft\DanmakuChat\src\main\java\com\danmakuchat\config\ModMenuIntegration.kt ---
+
+package com.danmakuchat.config
+
+import com.terraformersmc.modmenu.api.ConfigScreenFactory
+import com.terraformersmc.modmenu.api.ModMenuApi
+import net.minecraft.client.gui.DrawContext
+import net.minecraft.client.gui.screen.Screen
+import net.minecraft.client.gui.widget.ButtonWidget
+import net.minecraft.client.gui.widget.SliderWidget
+import net.minecraft.text.Text
+import kotlin.math.roundToInt
+
+class ModMenuIntegration : ModMenuApi {
+    override fun getModConfigScreenFactory(): ConfigScreenFactory<*> {
+        return ConfigScreenFactory { parent: Screen? -> DanmakuConfigScreen(parent) }
+    }
+
+    class DanmakuConfigScreen(private val parent: Screen?) : Screen(Text.translatable("danmakuchat.config.title")) {
+        private val config: DanmakuConfig = DanmakuConfig.getInstance()
+
+        private fun getEnableText(key: String, enabled: Boolean): Text {
+            val status = if (enabled) "danmakuchat.value.enabled" else "danmakuchat.value.disabled"
+            return Text.translatable(key).append(": ").append(Text.translatable(status))
+        }
+
+        override fun init() {
+            val centerX = this.width / 2
+            val startY = 40
+            val buttonWidth = 200
+            val buttonHeight = 20
+            val spacing = 25
+            var y = startY
+
+            // Enable/Disable toggle
+            addDrawableChild(
+                ButtonWidget.builder(
+                    getEnableText("danmakuchat.config.enabled", config.isEnabled)
+                ) { button ->
+                    config.isEnabled = !config.isEnabled
+                    button.message = getEnableText("danmakuchat.config.enabled", config.isEnabled)
+                }.dimensions(centerX - buttonWidth / 2, y, buttonWidth, buttonHeight).build()
+            )
+            y += spacing
+
+            // System Chat toggle
+            addDrawableChild(
+                ButtonWidget.builder(
+                    getEnableText("danmakuchat.config.system_chat", config.shouldShowSystemChat())
+                ) { button ->
+                    config.setShowSystemChat(!config.shouldShowSystemChat())
+                    button.message = getEnableText("danmakuchat.config.system_chat", config.shouldShowSystemChat())
+                }.dimensions(centerX - buttonWidth / 2, y, buttonWidth, buttonHeight).build()
+            )
+            y += spacing
+
+            // Hide Vanilla Chat toggle
+            addDrawableChild(
+                ButtonWidget.builder(
+                    getEnableText("danmakuchat.config.vanilla_chat", !config.shouldHideVanillaChat())
+                ) { button ->
+                    config.setHideVanillaChat(!config.shouldHideVanillaChat())
+                    button.message = getEnableText("danmakuchat.config.vanilla_chat", !config.shouldHideVanillaChat())
+                }.dimensions(centerX - buttonWidth / 2, y, buttonWidth, buttonHeight).build()
+            )
+            y += spacing + 10
+
+            // Scroll Speed slider
+            addDrawableChild(object : SliderWidget(
+                centerX - buttonWidth / 2, y, buttonWidth, buttonHeight,
+                Text.literal(""), (config.scrollSpeed - 0.1) / (5.0 - 0.1)
+            ) {
+                init { updateMessage() }
+                override fun updateMessage() {
+                    val value = 0.1 + this.value * (5.0 - 0.1)
+                    message = Text.translatable("danmakuchat.config.speed").append(": ").append(Text.literal(String.format("%.1f", value)))
+                }
+                override fun applyValue() {
+                    val value = 0.1 + this.value * (5.0 - 0.1)
+                    config.scrollSpeed = value.toFloat()
+                }
+            })
+            y += spacing
+
+            // Opacity slider
+            addDrawableChild(object : SliderWidget(
+                centerX - buttonWidth / 2, y, buttonWidth, buttonHeight,
+                Text.literal(""), config.opacity.toDouble()
+            ) {
+                init { updateMessage() }
+                override fun updateMessage() {
+                    message = Text.translatable("danmakuchat.config.opacity").append(": ").append(Text.literal(String.format("%.2f", this.value)))
+                }
+                override fun applyValue() {
+                    config.opacity = this.value.toFloat()
+                }
+            })
+            y += spacing
+
+            // Max Lanes slider
+            addDrawableChild(object : SliderWidget(
+                centerX - buttonWidth / 2, y, buttonWidth, buttonHeight,
+                Text.literal(""), (config.maxLanes - 1) / 19.0
+            ) {
+                init { updateMessage() }
+                override fun updateMessage() {
+                    val value = (1 + this.value * 19).roundToInt()
+                    message = Text.translatable("danmakuchat.config.lanes").append(": ").append(value.toString())
+                }
+                override fun applyValue() {
+                    val value = (1 + this.value * 19).roundToInt()
+                    config.maxLanes = value
+                }
+            })
+            y += spacing
+
+            // Font Size slider
+            addDrawableChild(object : SliderWidget(
+                centerX - buttonWidth / 2, y, buttonWidth, buttonHeight,
+                Text.literal(""), (config.fontSize - 0.5) / (2.0 - 0.5)
+            ) {
+                init { updateMessage() }
+                override fun updateMessage() {
+                    val value = 0.5 + this.value * (2.0 - 0.5)
+                    message = Text.translatable("danmakuchat.config.font_size").append(": ").append(Text.literal(String.format("%.2f", value)))
+                }
+                override fun applyValue() {
+                    val value = 0.5 + this.value * (2.0 - 0.5)
+                    config.fontSize = value.toFloat()
+                }
+            })
+            y += spacing + 30 // Make space for Done button
+
+            // Done button
+            addDrawableChild(
+                ButtonWidget.builder(Text.translatable("gui.done")) { 
+                    this.client?.setScreen(parent)
+                }.dimensions(centerX - buttonWidth / 2, y, buttonWidth, buttonHeight).build()
+            )
+        }
+
+        override fun render(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+            renderBackground(context, mouseX, mouseY, delta)
+            context.drawCenteredTextWithShadow(this.textRenderer, this.title, this.width / 2, 20, 0xFFFFFF)
+            super.render(context, mouseX, mouseY, delta)
+        }
+
+        override fun close() {
+            config.save()
+            this.client?.setScreen(this.parent)
+        }
+    }
+}
+
+
+--- C:\Programming\Minecraft\DanmakuChat\src\main\java\com\danmakuchat\danmaku\DanmakuManager.java ---
+
+package com.danmakuchat.danmaku;
+
+import com.danmakuchat.config.DanmakuConfig;
+import net.minecraft.text.Text;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
+/**
+ * 弾幕メッセージキューとレーン割り当てを管理します。
+ *
+ * ニコニコ動画に影響を受けた衝突回避アルゴリズムを実装し、
+ * メッセージの重複を防ぎながら可読性を保ちます。
+ */
+public class DanmakuManager {
+    private static DanmakuManager instance;
+
+    private final List<DanmakuMessage> activeMessages = new ArrayList<>();
+    private final List<LaneInfo> lanes = new ArrayList<>();
+
+    private static class LaneInfo {
+        int laneIndex;
+        DanmakuMessage lastMessage;  // このレーン内の最後のメッセージへの参照
+
+        LaneInfo(int index) {
+            this.laneIndex = index;
+            this.lastMessage = null;
+        }
+    }
+
+    private DanmakuManager() {
+        initializeLanes();
+    }
+
+    public static DanmakuManager getInstance() {
+        if (instance == null) {
+            instance = new DanmakuManager();
+        }
+        return instance;
+    }
+
+    private void initializeLanes() {
+        DanmakuConfig config = DanmakuConfig.getInstance();
+        int maxLanes = config.getMaxLanes();
+
+        lanes.clear();
+        for (int i = 0; i < maxLanes; i++) {
+            lanes.add(new LaneInfo(i));
+        }
+    }
+
+    /**
+     * Add a new message to the danmaku system.
+     * Lane assignment is deferred until rendering (when text width can be measured).
+     *
+     * @param message The text message to display
+     */
+    public void addMessage(Text message) {
+        DanmakuConfig config = DanmakuConfig.getInstance();
+        if (!config.isEnabled()) {
+            return;
+        }
+
+        // 固定速度ではなく、目標表示時間T_targetを渡す
+        float targetDuration = config.getDisplayDuration();
+
+        // DanmakuMessageのコンストラクタを変更（速度 -> 目標時間）
+        DanmakuMessage danmaku = new DanmakuMessage(message, targetDuration);
+
+        activeMessages.add(danmaku);
+    }
+
+    /**
+     * ニコニコ風の衝突回避アルゴリズムを使用して、最適な利用可能なレーンを見つけます。
+     * 修正点: ベストスコア方式を削除し、上から順（レーンインデックスが小さい順）に
+     * 最初に見つかった衝突しないレーンを即座に返します。
+     *
+     * @param screenWidth 画面幅（ピクセル）
+     * @param newMessageWidth 新しいメッセージの幅（ピクセル）
+     * @param newCalculatedSpeed 新しいメッセージの計算された速度
+     * @return レーンインデックス、または利用可能なレーンがない場合は -1
+     */
+    public int findBestLane(int screenWidth, int newMessageWidth, float newCalculatedSpeed) {
+        int maxLanes = DanmakuConfig.getInstance().getMaxLanes();
+
+        if (lanes.size() != maxLanes) {
+            initializeLanes();
+        }
+
+        final float MIN_SPACING = 5.0f;
+
+        // レーンはインデックスの昇順（上から下）に並んでいるため、
+        // ループで上から順にチェックすることで、垂直方向の優先度が保証されます。
+
+        for (LaneInfo lane : lanes) {
+
+            // --- 1. 空きレーンの即時採用 (最優先) ---
+            if (lane.lastMessage == null || !lane.lastMessage.isInitialized()) {
+                return lane.laneIndex; // 最初に空きレーンが見つかったら即座に採用
+            }
+
+            DanmakuMessage prevMessage = lane.lastMessage;
+            float prevPosX = prevMessage.getPosX();
+            int prevMessageWidth = prevMessage.getTextWidth();
+            float prevCalculatedSpeed = prevMessage.getCalculatedSpeed();
+
+            // --- 2. 初期衝突チェック (右端での衝突回避) ---
+            if (prevPosX + prevMessageWidth + MIN_SPACING > screenWidth) {
+                 continue;
+            }
+
+            // --- 3. 追い越し衝突チェック ---
+            if (newCalculatedSpeed > prevCalculatedSpeed) {
+
+                float relativeSpeed = newCalculatedSpeed - prevCalculatedSpeed;
+                // Prevの終点: prevPosX + prevMessageWidth
+                // Newの始点: screenWidth
+                float distanceToClose = screenWidth - (prevPosX + prevMessageWidth) + MIN_SPACING;
+
+                if (distanceToClose > 0) {
+                    float timeToCollision = distanceToClose / relativeSpeed;
+                    float prevTimeToExitScreen = (prevPosX + prevMessageWidth) / prevCalculatedSpeed;
+
+                    if (timeToCollision < prevTimeToExitScreen) {
+                        continue; // 衝突予測があるためスキップ
+                    }
+                }
+            }
+
+            // --- 4. 適合レーンの採用 (垂直優先を保証) ---
+            // 衝突回避の条件をすべてパスした場合、このレーンは利用可能な最も上のレーンです。
+            return lane.laneIndex;
+        }
+
+        // すべてのレーンが埋まっているか、衝突するため利用できない
+        return -1;
+    }
+
+    /**
+     * Update lane information after assigning a message to a lane.
+     *
+     * @param laneIndex The index of the lane
+     * @param message The message assigned to this lane
+     */
+    public void updateLaneInfo(int laneIndex, DanmakuMessage message) {
+        if (laneIndex >= 0 && laneIndex < lanes.size()) {
+            LaneInfo lane = lanes.get(laneIndex);
+            lane.lastMessage = message;
+        }
+    }
+
+    /**
+     * すべてのアクティブなメッセージを更新し、画面外のものを削除します。
+     *
+     * @param deltaTimeSeconds 前回の更新からの経過時間（秒単位）
+     */
+    public void update(float deltaTimeSeconds) {
+        Iterator<DanmakuMessage> iterator = activeMessages.iterator();
+        while (iterator.hasNext()) {
+            DanmakuMessage message = iterator.next();
+
+            // 初期化されている場合のみ更新
+            if (message.isInitialized()) {
+                message.update(deltaTimeSeconds);
+
+                // 画面外のメッセージを削除（初期化されたメッセージのみ）
+                // メッセージは右端（posX + textWidth）が左端（x < 0）を超えたときに削除されます
+                if (message.isOffScreen(message.getTextWidth())) {
+                    iterator.remove();
+                }
+            }
+            // 初期化されていないメッセージは削除しない - 最初にレンダリングされる機会が必要です
+        }
+    }
+
+    public List<DanmakuMessage> getActiveMessages() {
+        return new ArrayList<>(activeMessages);
+    }
+
+    public void clear() {
+        activeMessages.clear();
+    }
+}
+
+
+--- C:\Programming\Minecraft\DanmakuChat\src\main\java\com\danmakuchat\danmaku\DanmakuMessage.java ---
+
+package com.danmakuchat.danmaku;
+
+import com.danmakuchat.config.DanmakuConfig;
+import net.minecraft.text.Text;
+
+/**
+ * Represents a single danmaku message that flows across the screen.
+ */
+public class DanmakuMessage {
+    private final Text message;
+    private final long creationTime;
+    private float posX;
+    private float posY;
+    private float calculatedSpeed;
+    private final float targetDuration;
+    private float speed; // このフィールドは現在使用されていませんが、将来のために保持されています
+    private int lane;
+    private boolean initialized = false;
+    private int textWidth = 0;  // Measured width of the text
+
+
+    // コンストラクタを変更
+    public DanmakuMessage(Text message, float targetDuration) {
+        this.message = message;
+        this.creationTime = System.currentTimeMillis();
+        this.targetDuration = targetDuration; // 目標時間を保持
+        // speedは初期化時に計算しない
+        this.lane = -1;
+        this.posX = -1;
+        this.calculatedSpeed = 0.0f;
+    }
+
+    public Text getMessage() {
+        return message;
+    }
+
+    public long getCreationTime() {
+        return creationTime;
+    }
+
+    public float getPosX() {
+        return posX;
+    }
+
+    public void setPosX(float posX) {
+        this.posX = posX;
+    }
+
+    public float getPosY() {
+        return posY;
+    }
+
+    public void setPosY(float posY) {
+        this.posY = posY;
+    }
+
+    public float getSpeed() { // このメソッドは現在使用されていません
+        return speed;
+    }
+
+    public int getLane() {
+        return lane;
+    }
+
+    public void setLane(int lane) {
+        this.lane = lane;
+    }
+
+    public boolean isInitialized() {
+        return initialized;
+    }
+
+    public void setInitialized(boolean initialized) {
+        this.initialized = initialized;
+    }
+
+    public int getTextWidth() {
+        return textWidth;
+    }
+
+    public void setTextWidth(int textWidth) {
+        this.textWidth = textWidth;
+    }
+
+    public boolean isExpired(float maxDuration) {
+        long currentTime = System.currentTimeMillis();
+        return (currentTime - creationTime) > (maxDuration * 1000);
+    }
+    // 新しいメソッド：速度を計算し、フィールドに格納する
+    public void calculateSpeed(int screenWidth) {
+        // D = W_screen + W_text
+        float totalDistance = (float) screenWidth + (float) this.textWidth;
+
+        // V = D / T_target (pixels per second)
+        // さらにコンフィグのscrollSpeedを乗算してユーザーが調整できるようにする
+        float speedMultiplier = DanmakuConfig.getInstance().getScrollSpeed();
+        this.calculatedSpeed = (totalDistance / this.targetDuration) * speedMultiplier;
+    }
+
+    /**
+     * 計算された速度を取得します。
+     *
+     * @return 計算された速度（ピクセル/秒）
+     */
+    public float getCalculatedSpeed() {
+        return this.calculatedSpeed;
+    }
+    public void update(float deltaTimeSeconds) {
+        // 更新には計算された速度を使用
+        posX -= calculatedSpeed * deltaTimeSeconds;
+    }
+
+    public boolean isOffScreen(int textWidth) {
+        // メッセージが左端を超えて移動したときに画面外になります
+        return posX + textWidth < 0;
+    }
+}
+
+
+--- C:\Programming\Minecraft\DanmakuChat\src\main\java\com\danmakuchat\mixin\ChatHudAccessor.java ---
+
+package com.danmakuchat.mixin;
+
+import com.danmakuchat.danmaku.DanmakuManager;
+import net.minecraft.client.gui.hud.ChatHud;
+import net.minecraft.client.gui.hud.MessageIndicator;
+import net.minecraft.network.message.MessageSignatureData;
+import net.minecraft.text.Text;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+
+/**
+ * ChatHud に追加されるチャットメッセージをインターセプトするための Mixin。
+ *
+ * すべてのチャットメッセージをキャプチャし、
+ * 弾幕オーバーレイに表示するために DanmakuManager に転送します。
+ */
+@Mixin(ChatHud.class)
+public class ChatHudAccessor {
+
+    /**
+     * チャットに追加されているメッセージをインターセプトします。
+     * 3 引数の公開メソッド addMessage をフックして、すべてのチャットメッセージをキャプチャします。
+     *
+     * @param message チャットメッセージテキスト
+     * @param signature メッセージシグネチャ（nullable）
+     * @param indicator メッセージインジケーター（nullable）
+     * @param ci コールバック情報
+     */
+    @Inject(
+        method = "addMessage(Lnet/minecraft/text/Text;Lnet/minecraft/network/message/MessageSignatureData;Lnet/minecraft/client/gui/hud/MessageIndicator;)V",
+        at = @At("HEAD")
+    )
+    private void onAddMessage(@NotNull Text message, @Nullable MessageSignatureData signature, @Nullable MessageIndicator indicator, CallbackInfo ci) {
+        // このメッセージがユーザーメッセージかシステムメッセージかを判定
+        String messageText = message.getString();
+        boolean isUserMessage = isUserChatMessage(messageText);
+
+        // 設定を確認して、このメッセージタイプを表示するかどうかをチェック
+        com.danmakuchat.config.DanmakuConfig config = com.danmakuchat.config.DanmakuConfig.getInstance();
+
+        // ユーザーチャットの表示設定を削除したため、ユーザーチャットは常に弾幕として表示される
+        // if (isUserMessage && !config.shouldShowUserChat()) {
+        //     // ユーザーメッセージだが、ユーザーメッセージが無効
+        //     return;
+        // }
+
+        if (!isUserMessage && !config.shouldShowSystemChat()) {
+            // システムメッセージだが、システムメッセージが無効
+            return;
+        }
+
+        // メッセージを弾幕マネージャーに転送
+        DanmakuManager.getInstance().addMessage(message);
+    }
+
+    /**
+     * メッセージがユーザー（プレイヤーチャット）またはシステムからのものかを検出します。
+     * ユーザーメッセージは通常、パターン: <プレイヤー名> メッセージ に従います。
+     *
+     * @param messageText メッセージのプレーンテキスト
+     * @return ユーザーメッセージの場合は true、システムメッセージの場合は false
+     */
+    private boolean isUserChatMessage(String messageText) {
+        // ユーザーチャットメッセージのパターン: <プレイヤー名> メッセージ
+        // このプレックスマッチは次のパターンにマッチします：
+        // < で開始、その後に少なくとも 1 つの > 以外の文字、その後に >、その後にスペースとコンテンツ
+        return messageText.matches("^<[^>]+> .$");
+    }
+}
+
+--- C:\Programming\Minecraft\DanmakuChat\src\main\java\com\danmakuchat\mixin\ChatHudMixin.java ---
+
+package com.danmakuchat.mixin;
+
+import com.danmakuchat.config.DanmakuConfig;
+import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.gui.hud.ChatHud;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+
+/**
+ * DanmakuChat が有効な場合、バニラ Minecraft チャットを隠すための Mixin。
+ *
+ * この Mixin は ChatHud の render メソッドをインターセプトして、
+ * モッドがアクティブな場合、カスタムの弾幕オーバーレイに置き換わるよう、
+ * 標準チャットの描画をキャンセルします。
+ */
+@Mixin(ChatHud.class)
+public class ChatHudMixin {
+
+    /**
+     * DanmakuChat が有効な場合、バニラチャット描画をキャンセルします。
+     *
+     * @param context 描画用のコンテキスト
+     * @param currentTick 現在のゲームティック
+     * @param mouseX マウスの X 位置
+     * @param mouseY マウスの Y 位置
+     * @param focused チャットがフォーカスされているか
+     * @param ci メソッドをキャンセルするためのコールバック情報
+     */
+    @Inject(
+        method = "render(Lnet/minecraft/client/gui/DrawContext;IIIZ)V",
+        at = @At("HEAD"),
+        cancellable = true
+    )
+    private void onRender(DrawContext context, int currentTick, int mouseX, int mouseY, boolean focused, CallbackInfo ci) {
+        DanmakuConfig config = DanmakuConfig.getInstance();
+
+        // DanmakuChat が有効かつバニラチャットを隠すように設定されている場合、
+        // バニラチャット描画をキャンセル
+        if (config.isEnabled() && config.shouldHideVanillaChat()) {
+            ci.cancel();
+        }
+    }
+}
+
+
+--- C:\Programming\Minecraft\DanmakuChat\src\main\java\com\danmakuchat\render\DanmakuRenderer.java ---
+
+package com.danmakuchat.render;
+
+import com.danmakuchat.config.DanmakuConfig;
+import com.danmakuchat.danmaku.DanmakuManager;
+import com.danmakuchat.danmaku.DanmakuMessage;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.font.TextRenderer;
+import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.render.RenderTickCounter;
+import net.minecraft.text.Text;
+
+import java.util.List;
+
+/**
+ * 弾幕メッセージをスクリーンに描画します。
+ *
+ * ニコニコ動画の弾幕システムに影響を受けた、
+ * 流れるチャットメッセージの視覚的表示を実装します。
+ */
+public class DanmakuRenderer {
+    private static final int LANE_HEIGHT = 20;
+    private static final int TOP_MARGIN = 10;
+
+    private long lastFrameTime = -1;
+
+    public DanmakuRenderer() {
+    }
+
+    /**
+     * すべてのアクティブな弾幕メッセージを描画します。
+     *
+     * @param context 描画コンテキスト
+     * @param tickCounter アニメーション用レンダリングティックカウンター
+     */
+    public void render(DrawContext context, RenderTickCounter tickCounter) {
+        DanmakuConfig config = DanmakuConfig.getInstance();
+
+        if (!config.isEnabled()) {
+            return;
+        }
+
+        // リアルタイム（ナノ秒）を使用してデルタタイムを計算
+        long currentTime = System.nanoTime();
+        float deltaTimeSeconds;
+
+        if (lastFrameTime == -1) {
+            // 最初のフレーム、60 FPSと仮定
+            deltaTimeSeconds = 1.0f / 60.0f;
+        } else {
+            // 実際の時間差を計算
+            deltaTimeSeconds = (currentTime - lastFrameTime) / 1_000_000_000.0f;
+            // 合理的な値に制限（大きなジャンプを防止）
+            deltaTimeSeconds = Math.min(deltaTimeSeconds, 0.1f);
+        }
+        lastFrameTime = currentTime;
+
+        // すべてのメッセージを更新
+        DanmakuManager manager = DanmakuManager.getInstance();
+        manager.update(deltaTimeSeconds);
+
+        // MinecraftClient インスタンスを取得
+        MinecraftClient client = MinecraftClient.getInstance();
+        if (client == null) {
+            return;
+        }
+
+        // スクリーン寸法を取得
+        int screenWidth = client.getWindow().getScaledWidth();
+        int screenHeight = client.getWindow().getScaledHeight();
+
+        // 描画状態を保存
+        context.getMatrices().pushMatrix();
+
+        try {
+            // 各メッセージを描画
+            List<DanmakuMessage> messages = manager.getActiveMessages();
+            TextRenderer textRenderer = client.textRenderer;
+
+            for (DanmakuMessage message : messages) {
+            // 最初のレンダリング前に位置を初期化
+            if (!message.isInitialized()) {
+                // フォントサイズ設定を取得
+                float fontSize = config.getFontSize();
+
+                // テキスト幅を測定（フォントサイズを考慮）
+                Text text = message.getMessage();
+                int baseTextWidth = textRenderer.getWidth(text);
+                int scaledTextWidth = (int) (baseTextWidth * fontSize);
+                message.setTextWidth(scaledTextWidth);
+
+                // ① 速度の計算と設定 (screenWidth を使用して速度を確定)
+                message.calculateSpeed(screenWidth);
+
+                // ② レーンの割り当てと衝突回避アルゴリズム
+                int bestLane = manager.findBestLane(screenWidth, scaledTextWidth, message.getCalculatedSpeed());
+
+                if (bestLane != -1) {
+                    // レーンを割り当て
+                    message.setLane(bestLane);
+
+                    // 位置を設定
+                    message.setPosX(screenWidth); // 右端から開始
+                    message.setPosY(TOP_MARGIN + bestLane * LANE_HEIGHT);
+
+                    // レーン追跡を更新
+                    manager.updateLaneInfo(bestLane, message);
+
+                    // 初期化済みとしてマーク
+                    message.setInitialized(true);
+                } else {
+                    // 利用可能なレーンがない - このメッセージをスキップ
+                    continue;
+                }
+            }
+
+            // 初期化されていない場合は描画をスキップ
+            if (!message.isInitialized()) {
+                continue;
+            }
+
+            // メッセージの寸法を取得（キャッシュされた幅を使用）
+            Text text = message.getMessage();
+
+            // 位置を計算
+            int x = (int) message.getPosX();
+            int y = (int) message.getPosY();
+
+            // 設定から不透明度を取得（0.0 - 1.0）
+            float opacity = config.getOpacity();
+            int alpha = (int) (opacity * 255);
+
+            // 設定可能な不透明度を持つ白色テキスト
+            int textColor = (alpha << 24) | 0x00FFFFFF;
+
+            // フォントサイズ設定を取得
+            float fontSize = config.getFontSize();
+
+            // フォントサイズをスケール適用するためにマトリックスをプッシュ
+            context.getMatrices().pushMatrix();
+            context.getMatrices().scale(fontSize, fontSize);
+
+            // スケール後の座標を計算（スケール適用後の座標系に変換）
+            int scaledX = (int) (x / fontSize);
+            int scaledY = (int) (y / fontSize);
+
+            // 視認性のための影付きテキストを描画
+            context.drawTextWithShadow(
+                textRenderer,
+                text,
+                scaledX,
+                scaledY,
+                textColor
+            );
+
+            // マトリックスを復元
+            context.getMatrices().popMatrix();
+        }        } finally {
+            // 描画状態を復元
+            context.getMatrices().popMatrix();
+        }
+    }
+}

@@ -34,7 +34,6 @@ public class DanmakuConfig {
 
     // Message filtering settings
     private boolean showSystemChat = false;  // System messages OFF by default
-    private boolean showUserChat = true;     // User messages ON by default
 
     private DanmakuConfig() {}
 
@@ -88,7 +87,6 @@ public class DanmakuConfig {
     public float getFontSize() { return fontSize; }
     public boolean isDiscordIntegrationEnabled() { return discordIntegration; }
     public boolean shouldShowSystemChat() { return showSystemChat; }
-    public boolean shouldShowUserChat() { return showUserChat; }
 
     // Setters (auto-save on change)
     public void setEnabled(boolean enabled) {
@@ -125,10 +123,6 @@ public class DanmakuConfig {
     }
     public void setShowSystemChat(boolean show) {
         this.showSystemChat = show;
-        save();
-    }
-    public void setShowUserChat(boolean show) {
-        this.showUserChat = show;
         save();
     }
 }

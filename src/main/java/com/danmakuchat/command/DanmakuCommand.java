@@ -27,9 +27,6 @@ public class DanmakuCommand {
             .then(literal("system")
                 .then(argument("value", BoolArgumentType.bool())
                     .executes(ctx -> setSystemChat(ctx, BoolArgumentType.getBool(ctx, "value")))))
-            .then(literal("user")
-                .then(argument("value", BoolArgumentType.bool())
-                    .executes(ctx -> setUserChat(ctx, BoolArgumentType.getBool(ctx, "value")))))
             .then(literal("speed")
                 .then(argument("value", FloatArgumentType.floatArg(0.1f, 5.0f))
                     .executes(ctx -> setSpeed(ctx, FloatArgumentType.getFloat(ctx, "value")))))
@@ -60,7 +57,6 @@ public class DanmakuCommand {
 
         source.sendFeedback(Text.translatable("danmakuchat.command.status.main", getEnableStatusText(config.isEnabled())));
         source.sendFeedback(Text.translatable("danmakuchat.command.status.system", getEnableStatusText(config.shouldShowSystemChat())));
-        source.sendFeedback(Text.translatable("danmakuchat.command.status.user", getEnableStatusText(config.shouldShowUserChat())));
         source.sendFeedback(Text.translatable("danmakuchat.command.status.vanilla", getEnableStatusText(!config.shouldHideVanillaChat())));
         source.sendFeedback(Text.translatable("danmakuchat.command.status.speed", config.getScrollSpeed()));
         source.sendFeedback(Text.translatable("danmakuchat.command.status.lanes", config.getMaxLanes()));
@@ -79,12 +75,6 @@ public class DanmakuCommand {
     private static int setSystemChat(CommandContext<FabricClientCommandSource> ctx, boolean show) {
         DanmakuConfig.getInstance().setShowSystemChat(show);
         ctx.getSource().sendFeedback(Text.translatable("danmakuchat.command.set.system", getEnableStatusText(show)));
-        return 1;
-    }
-
-    private static int setUserChat(CommandContext<FabricClientCommandSource> ctx, boolean show) {
-        DanmakuConfig.getInstance().setShowUserChat(show);
-        ctx.getSource().sendFeedback(Text.translatable("danmakuchat.command.set.user", getEnableStatusText(show)));
         return 1;
     }
 

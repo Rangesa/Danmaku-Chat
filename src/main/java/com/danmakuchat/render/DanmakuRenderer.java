@@ -79,16 +79,20 @@ public class DanmakuRenderer {
             for (DanmakuMessage message : messages) {
             // 最初のレンダリング前に位置を初期化
             if (!message.isInitialized()) {
-                // テキスト幅を測定
+                // フォントサイズ設定を取得
+                float fontSize = config.getFontSize();
+
+                // テキスト幅を測定（フォントサイズを考慮）
                 Text text = message.getMessage();
-                int textWidth = textRenderer.getWidth(text);
-                message.setTextWidth(textWidth);
+                int baseTextWidth = textRenderer.getWidth(text);
+                int scaledTextWidth = (int) (baseTextWidth * fontSize);
+                message.setTextWidth(scaledTextWidth);
 
                 // ① 速度の計算と設定 (screenWidth を使用して速度を確定)
                 message.calculateSpeed(screenWidth);
 
                 // ② レーンの割り当てと衝突回避アルゴリズム
-                int bestLane = manager.findBestLane(screenWidth, textWidth, message.getCalculatedSpeed());
+                int bestLane = manager.findBestLane(screenWidth, scaledTextWidth, message.getCalculatedSpeed());
 
                 if (bestLane != -1) {
                     // レーンを割り当て
@@ -128,14 +132,28 @@ public class DanmakuRenderer {
             // 設定可能な不透明度を持つ白色テキスト
             int textColor = (alpha << 24) | 0x00FFFFFF;
 
+            // フォントサイズ設定を取得
+            float fontSize = config.getFontSize();
+
+            // フォントサイズをスケール適用するためにマトリックスをプッシュ
+            context.getMatrices().pushMatrix();
+            context.getMatrices().scale(fontSize, fontSize);
+
+            // スケール後の座標を計算（スケール適用後の座標系に変換）
+            int scaledX = (int) (x / fontSize);
+            int scaledY = (int) (y / fontSize);
+
             // 視認性のための影付きテキストを描画
             context.drawTextWithShadow(
                 textRenderer,
                 text,
-                x,
-                y,
+                scaledX,
+                scaledY,
                 textColor
             );
+
+            // マトリックスを復元
+            context.getMatrices().popMatrix();
         }
         } finally {
             // 描画状態を復元

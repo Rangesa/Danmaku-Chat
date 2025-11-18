@@ -2,7 +2,6 @@
   "danmakuchat.config.title": "弾幕チャット設定",
   "danmakuchat.config.enabled": "弾幕の有効化",
   "danmakuchat.config.system_chat": "システムメッセージの弾幕",
-  "danmakuchat.config.user_chat": "ユーザーチャットの弾幕",
   "danmakuchat.config.vanilla_chat": "バニラチャットの表示",
   "danmakuchat.config.speed": "弾幕の速度",
   "danmakuchat.config.lanes": "弾幕のレーン数",
@@ -11,7 +10,6 @@
 
   "danmakuchat.command.status.main": "弾幕は現在 %s です。",
   "danmakuchat.command.status.system": "システムメッセージの弾幕は現在 %s です。",
-  "danmakuchat.command.status.user": "ユーザーチャットの弾幕は現在 %s です。",
   "danmakuchat.command.status.vanilla": "バニラチャットの表示は現在 %s です。",
   "danmakuchat.command.status.speed": "弾幕の速度は現在 %d です。",
   "danmakuchat.command.status.lanes": "弾幕のレーン数は現在 %d です。",
@@ -20,7 +18,6 @@
 
   "danmakuchat.command.set.main": "弾幕を %s にしました。",
   "danmakuchat.command.set.system": "システムメッセージの弾幕を %s にしました。",
-  "danmakuchat.command.set.user": "ユーザーチャットの弾幕を %s にしました。",
   "danmakuchat.command.set.vanilla": "バニラチャットの表示を %s にしました。",
   "danmakuchat.command.set.speed": "弾幕の速度を %d にしました。",
   "danmakuchat.command.set.lanes": "弾幕のレーン数を %d にしました。",

@@ -2,7 +2,6 @@
   "danmakuchat.config.title": "DanmakuChat Settings",
   "danmakuchat.config.enabled": "Enable Danmaku",
   "danmakuchat.config.system_chat": "System Message Danmaku",
-  "danmakuchat.config.user_chat": "User Chat Danmaku",
   "danmakuchat.config.vanilla_chat": "Show Vanilla Chat",
   "danmakuchat.config.speed": "Danmaku Speed",
   "danmakuchat.config.lanes": "Danmaku Lanes",
@@ -11,7 +10,6 @@
 
   "danmakuchat.command.status.main": "Danmaku is currently %s.",
   "danmakuchat.command.status.system": "System message danmaku is currently %s.",
-  "danmakuchat.command.status.user": "User chat danmaku is currently %s.",
   "danmakuchat.command.status.vanilla": "Vanilla chat visibility is currently %s.",
   "danmakuchat.command.status.speed": "Danmaku speed is currently %d.",
   "danmakuchat.command.status.lanes": "Danmaku lanes are currently %d.",
@@ -20,7 +18,6 @@
 
   "danmakuchat.command.set.main": "Set danmaku to %s.",
   "danmakuchat.command.set.system": "Set system message danmaku to %s.",
-  "danmakuchat.command.set.user": "Set user chat danmaku to %s.",
   "danmakuchat.command.set.vanilla": "Set vanilla chat visibility to %s.",
   "danmakuchat.command.set.speed": "Set danmaku speed to %d.",
   "danmakuchat.command.set.lanes": "Set danmaku lanes to %d.",
