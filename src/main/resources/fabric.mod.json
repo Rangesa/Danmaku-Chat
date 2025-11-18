@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "id": "danmakuchat",
+  "version": "${version}",
+  "name": "DanmakuChat",
+  "description": "Niconico-style danmaku chat overlay for Minecraft. Replace standard chat with flowing comments across the screen.",
+  "authors": [
+    "DanmakuChat Team"
+  ],
+  "contact": {},
+  "license": "MIT",
+  "icon": "assets/danmakuchat/icon.png",
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "com.danmakuchat.DanmakuChat"
+    ],
+    "modmenu": [
+      "com.danmakuchat.config.ModMenuIntegration"
+    ]
+  },
+  "mixins": [
+    "danmakuchat.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=${loader_version}",
+    "fabric": "*",
+    "minecraft": "${minecraft_version}",
+    "java": ">=21"
+  }
+}

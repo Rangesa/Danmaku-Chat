@@ -1,0 +1,38 @@
+{
+  "danmakuchat.config.title": "弾幕チャット設定",
+  "danmakuchat.config.enabled": "弾幕の有効化",
+  "danmakuchat.config.system_chat": "システムメッセージの弾幕",
+  "danmakuchat.config.user_chat": "ユーザーチャットの弾幕",
+  "danmakuchat.config.vanilla_chat": "バニラチャットの表示",
+  "danmakuchat.config.speed": "弾幕の速度",
+  "danmakuchat.config.lanes": "弾幕のレーン数",
+  "danmakuchat.config.opacity": "弾幕の不透明度",
+  "danmakuchat.config.font_size": "弾幕のフォントサイズ",
+
+  "danmakuchat.command.status.main": "弾幕は現在 %s です。",
+  "danmakuchat.command.status.system": "システムメッセージの弾幕は現在 %s です。",
+  "danmakuchat.command.status.user": "ユーザーチャットの弾幕は現在 %s です。",
+  "danmakuchat.command.status.vanilla": "バニラチャットの表示は現在 %s です。",
+  "danmakuchat.command.status.speed": "弾幕の速度は現在 %d です。",
+  "danmakuchat.command.status.lanes": "弾幕のレーン数は現在 %d です。",
+  "danmakuchat.command.status.opacity": "弾幕の不透明度は現在 %.2f です。",
+  "danmakuchat.command.status.font_size": "弾幕のフォントサイズは現在 %.2f です。",
+
+  "danmakuchat.command.set.main": "弾幕を %s にしました。",
+  "danmakuchat.command.set.system": "システムメッセージの弾幕を %s にしました。",
+  "danmakuchat.command.set.user": "ユーザーチャットの弾幕を %s にしました。",
+  "danmakuchat.command.set.vanilla": "バニラチャットの表示を %s にしました。",
+  "danmakuchat.command.set.speed": "弾幕の速度を %d にしました。",
+  "danmakuchat.command.set.lanes": "弾幕のレーン数を %d にしました。",
+  "danmakuchat.command.set.opacity": "弾幕の不透明度を %.2f にしました。",
+  "danmakuchat.command.set.font_size": "弾幕のフォントサイズを %.2f にしました。",
+
+  "danmakuchat.command.reload": "設定をリロードしました。",
+  "danmakuchat.command.error.invalid_argument": "引数が不正です。",
+
+  "danmakuchat.value.enabled": "有効",
+  "danmakuchat.value.disabled": "無効",
+
+  "danmakuchat.config.error.load": "設定ファイルの読み込みに失敗しました。",
+  "danmakuchat.config.error.save": "設定ファイルの保存に失敗しました。"
+}

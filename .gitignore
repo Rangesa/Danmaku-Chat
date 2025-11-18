@@ -1,0 +1,53 @@
+# Gradle
+.gradle/
+build/
+out/
+bin/
+
+# Eclipse
+.classpath
+.project
+.settings/
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# VSCode
+.vscode/
+
+# Fabric
+run/
+logs/
+crash-reports/
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+desktop.ini
+
+# Minecraft
+minecraft_server*.jar
+server.properties
+eula.txt
+banned-*.json
+ops.json
+whitelist.json
+usercache.json
+
+# Loom
+.fabric/
+remappedSrc/
+.loom-cache/
+
+# Generated sources
+**/src/generated/
+
+# Misc
+*.log
+*.lock
+*.tmp

@@ -1,0 +1,38 @@
+{
+  "danmakuchat.config.title": "DanmakuChat Settings",
+  "danmakuchat.config.enabled": "Enable Danmaku",
+  "danmakuchat.config.system_chat": "System Message Danmaku",
+  "danmakuchat.config.user_chat": "User Chat Danmaku",
+  "danmakuchat.config.vanilla_chat": "Show Vanilla Chat",
+  "danmakuchat.config.speed": "Danmaku Speed",
+  "danmakuchat.config.lanes": "Danmaku Lanes",
+  "danmakuchat.config.opacity": "Danmaku Opacity",
+  "danmakuchat.config.font_size": "Danmaku Font Size",
+
+  "danmakuchat.command.status.main": "Danmaku is currently %s.",
+  "danmakuchat.command.status.system": "System message danmaku is currently %s.",
+  "danmakuchat.command.status.user": "User chat danmaku is currently %s.",
+  "danmakuchat.command.status.vanilla": "Vanilla chat visibility is currently %s.",
+  "danmakuchat.command.status.speed": "Danmaku speed is currently %d.",
+  "danmakuchat.command.status.lanes": "Danmaku lanes are currently %d.",
+  "danmakuchat.command.status.opacity": "Danmaku opacity is currently %.2f.",
+  "danmakuchat.command.status.font_size": "Danmaku font size is currently %.2f.",
+
+  "danmakuchat.command.set.main": "Set danmaku to %s.",
+  "danmakuchat.command.set.system": "Set system message danmaku to %s.",
+  "danmakuchat.command.set.user": "Set user chat danmaku to %s.",
+  "danmakuchat.command.set.vanilla": "Set vanilla chat visibility to %s.",
+  "danmakuchat.command.set.speed": "Set danmaku speed to %d.",
+  "danmakuchat.command.set.lanes": "Set danmaku lanes to %d.",
+  "danmakuchat.command.set.opacity": "Set danmaku opacity to %.2f.",
+  "danmakuchat.command.set.font_size": "Set danmaku font size to %.2f.",
+
+  "danmakuchat.command.reload": "Settings reloaded.",
+  "danmakuchat.command.error.invalid_argument": "Invalid argument.",
+
+  "danmakuchat.value.enabled": "Enabled",
+  "danmakuchat.value.disabled": "Disabled",
+
+  "danmakuchat.config.error.load": "Failed to load config file.",
+  "danmakuchat.config.error.save": "Failed to save config file."
+}
