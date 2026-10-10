@@ -1,7 +1,7 @@
 package com.danmakuchat.danmaku;
 
 import com.danmakuchat.config.DanmakuConfig;
-import net.minecraft.text.Text;
+import net.minecraft.network.chat.Component;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -56,7 +56,7 @@ public class DanmakuManager {
      *
      * @param message The text message to display
      */
-    public void addMessage(Text message) {
+    public void addMessage(Component message) {
         DanmakuConfig config = DanmakuConfig.getInstance();
         if (!config.isEnabled()) {
             return;

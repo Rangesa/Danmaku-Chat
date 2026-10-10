@@ -3,11 +3,11 @@ package com.danmakuchat.render;
 import com.danmakuchat.config.DanmakuConfig;
 import com.danmakuchat.danmaku.DanmakuManager;
 import com.danmakuchat.danmaku.DanmakuMessage;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.render.RenderTickCounter;
-import net.minecraft.text.Text;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.DeltaTracker;
+import net.minecraft.network.chat.Component;
 
 import java.util.List;
 
@@ -32,7 +32,7 @@ public class DanmakuRenderer {
      * @param context 描画コンテキスト
      * @param tickCounter アニメーション用レンダリングティックカウンター
      */
-    public void render(DrawContext context, RenderTickCounter tickCounter) {
+    public void render(GuiGraphicsExtractor context, DeltaTracker tickCounter) {
         DanmakuConfig config = DanmakuConfig.getInstance();
 
         if (!config.isEnabled()) {
@@ -58,23 +58,23 @@ public class DanmakuRenderer {
         DanmakuManager manager = DanmakuManager.getInstance();
         manager.update(deltaTimeSeconds);
 
-        // MinecraftClient インスタンスを取得
-        MinecraftClient client = MinecraftClient.getInstance();
+        // Minecraft インスタンスを取得
+        Minecraft client = Minecraft.getInstance();
         if (client == null) {
             return;
         }
 
         // スクリーン寸法を取得
-        int screenWidth = client.getWindow().getScaledWidth();
-        int screenHeight = client.getWindow().getScaledHeight();
+        int screenWidth = client.getWindow().getGuiScaledWidth();
+        int screenHeight = client.getWindow().getGuiScaledHeight();
 
         // 描画状態を保存
-        context.getMatrices().pushMatrix();
+        context.pose().pushMatrix();
 
         try {
             // 各メッセージを描画
             List<DanmakuMessage> messages = manager.getActiveMessages();
-            TextRenderer textRenderer = client.textRenderer;
+            Font textRenderer = client.font;
 
             for (DanmakuMessage message : messages) {
             // 最初のレンダリング前に位置を初期化
@@ -83,8 +83,8 @@ public class DanmakuRenderer {
                 float fontSize = config.getFontSize();
 
                 // テキスト幅を測定（フォントサイズを考慮）
-                Text text = message.getMessage();
-                int baseTextWidth = textRenderer.getWidth(text);
+                Component text = message.getMessage();
+                int baseTextWidth = textRenderer.width(text);
                 int scaledTextWidth = (int) (baseTextWidth * fontSize);
                 message.setTextWidth(scaledTextWidth);
 
@@ -119,7 +119,7 @@ public class DanmakuRenderer {
             }
 
             // メッセージの寸法を取得（キャッシュされた幅を使用）
-            Text text = message.getMessage();
+            Component text = message.getMessage();
 
             // 位置を計算
             int x = (int) message.getPosX();
@@ -136,28 +136,22 @@ public class DanmakuRenderer {
             float fontSize = config.getFontSize();
 
             // フォントサイズをスケール適用するためにマトリックスをプッシュ
-            context.getMatrices().pushMatrix();
-            context.getMatrices().scale(fontSize, fontSize);
+            context.pose().pushMatrix();
+            context.pose().scale(fontSize, fontSize);
 
             // スケール後の座標を計算（スケール適用後の座標系に変換）
             int scaledX = (int) (x / fontSize);
             int scaledY = (int) (y / fontSize);
 
             // 視認性のための影付きテキストを描画
-            context.drawTextWithShadow(
-                textRenderer,
-                text,
-                scaledX,
-                scaledY,
-                textColor
-            );
+            context.text(textRenderer, text, scaledX, scaledY, textColor, true);
 
             // マトリックスを復元
-            context.getMatrices().popMatrix();
+            context.pose().popMatrix();
         }
         } finally {
             // 描画状態を復元
-            context.getMatrices().popMatrix();
+            context.pose().popMatrix();
         }
     }
 }
