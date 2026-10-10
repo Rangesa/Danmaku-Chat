@@ -43,10 +43,10 @@ public final class DanmakuChat implements ClientModInitializer {
         // Only hide rendered lines. Keep the signed vanilla chat history intact and
         // show it when the player opens chat to preserve accessibility and reporting.
         Minecraft minecraft = Minecraft.getInstance();
-        minecraft.gui.getChat().setVisibleMessageFilter(message ->
+        minecraft.gui.hud.getChat().setVisibleMessageFilter(message ->
             !DanmakuConfig.getInstance().isEnabled()
                 || !DanmakuConfig.getInstance().shouldHideVanillaChat()
-                || minecraft.gui.getChat().isChatFocused()
+                || minecraft.gui.hud.getChat().isChatFocused()
         );
 
         ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) ->
