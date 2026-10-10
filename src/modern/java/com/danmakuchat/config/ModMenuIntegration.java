@@ -31,31 +31,31 @@ public final class ModMenuIntegration implements ModMenuApi {
             int x = width / 2 - 100;
             int y = 28;
             addRenderableWidget(Button.builder(toggle("Enabled", config.isEnabled()),
-                b -> { config.setEnabled(!config.isEnabled()); rebuildWidgets(); }).bounds(x,y,200,20).build());
+                b -> { config.setEnabled(!config.isEnabled()); refreshControls(); }).bounds(x,y,200,20).build());
             y += 24;
             addRenderableWidget(Button.builder(toggle("System chat", config.shouldShowSystemChat()),
-                b -> { config.setShowSystemChat(!config.shouldShowSystemChat()); rebuildWidgets(); }).bounds(x,y,200,20).build());
+                b -> { config.setShowSystemChat(!config.shouldShowSystemChat()); refreshControls(); }).bounds(x,y,200,20).build());
             y += 24;
             addRenderableWidget(Button.builder(toggle("Vanilla chat", !config.shouldHideVanillaChat()),
-                b -> { config.setHideVanillaChat(!config.shouldHideVanillaChat()); rebuildWidgets(); }).bounds(x,y,200,20).build());
+                b -> { config.setHideVanillaChat(!config.shouldHideVanillaChat()); refreshControls(); }).bounds(x,y,200,20).build());
             y += 28;
             addRenderableWidget(Button.builder(Component.literal("Speed: " + fmt(config.getScrollSpeed()) + "  (+0.1)"),
-                b -> { float value = config.getScrollSpeed() >= 5 ? 0.1f : config.getScrollSpeed()+0.1f; config.setScrollSpeed(value); rebuildWidgets(); }).bounds(x,y,200,20).build());
+                b -> { float value = config.getScrollSpeed() >= 5 ? 0.1f : config.getScrollSpeed()+0.1f; config.setScrollSpeed(value); refreshControls(); }).bounds(x,y,200,20).build());
             y += 24;
             addRenderableWidget(Button.builder(Component.literal("Opacity: " + fmt(config.getOpacity()) + "  (+0.1)"),
-                b -> { float value = config.getOpacity() >= 1 ? 0 : config.getOpacity()+0.1f; config.setOpacity(value); rebuildWidgets(); }).bounds(x,y,200,20).build());
+                b -> { float value = config.getOpacity() >= 1 ? 0 : config.getOpacity()+0.1f; config.setOpacity(value); refreshControls(); }).bounds(x,y,200,20).build());
             y += 24;
             addRenderableWidget(Button.builder(Component.literal("Lanes: " + config.getMaxLanes() + "  (+1)"),
-                b -> { int value = config.getMaxLanes() >= 20 ? 1 : config.getMaxLanes()+1; config.setMaxLanes(value); rebuildWidgets(); }).bounds(x,y,200,20).build());
+                b -> { int value = config.getMaxLanes() >= 20 ? 1 : config.getMaxLanes()+1; config.setMaxLanes(value); refreshControls(); }).bounds(x,y,200,20).build());
             y += 24;
             addRenderableWidget(Button.builder(Component.literal("Font size: " + fmt(config.getFontSize()) + "  (+0.1)"),
-                b -> { float value = config.getFontSize() >= 2 ? 0.5f : config.getFontSize()+0.1f; config.setFontSize(value); rebuildWidgets(); }).bounds(x,y,200,20).build());
+                b -> { float value = config.getFontSize() >= 2 ? 0.5f : config.getFontSize()+0.1f; config.setFontSize(value); refreshControls(); }).bounds(x,y,200,20).build());
             y += 32;
             addRenderableWidget(Button.builder(Component.translatable("gui.done"),
                 b -> onClose()).bounds(x,y,200,20).build());
         }
 
-        private void rebuildWidgets() {
+        private void refreshControls() {
             clearWidgets();
             init();
         }
@@ -68,7 +68,7 @@ public final class ModMenuIntegration implements ModMenuApi {
         @Override
         public void onClose() {
             config.save();
-            Minecraft.getInstance().setScreen(parent);
+            Minecraft.getInstance().gui.setScreen(parent);
         }
     }
 }
