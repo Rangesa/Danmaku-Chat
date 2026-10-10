@@ -24,7 +24,9 @@ public final class DanmakuClientSmokeTest implements FabricClientGameTest {
         }
 
         try (TestSingleplayerContext world = context.worldBuilder().create()) {
-            world.getClientLevel().waitForChunksRender();
+            // GameTest worldBuilder.create() joins the singleplayer world.
+            // Wait for rendering without assuming the renamed context API.
+            context.waitTicks(25);
             context.runOnClient(client -> {
                 if (client.player == null || client.world == null) {
                     throw new AssertionError("Client world/player missing");
