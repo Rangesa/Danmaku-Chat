@@ -35,3 +35,121 @@ jobs:
           name: DanmakuChat-${{ matrix.minecraft }}
           path: build/libs/*.jar
           if-no-files-found: error
+
+  release:
+    name: GitHub Release (Minecraft binary and source jars)
+    needs: build
+    if: >-
+      github.event_name == 'push' &&
+      (github.ref == 'refs/heads/main' ||
+       github.ref == 'refs/heads/feature/fabric-multiversion-26x')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    concurrency:
+      group: github-release
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+      - name: Read mod version and compute release tag
+        id: version
+        shell: bash
+        run: |
+          set -euo pipefail
+          version="$(sed -n 's/^mod_version=//p' gradle.properties | head -n 1 | tr -d '\r')"
+          if [[ ! "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.-]+)?$ ]]; then
+            echo "::error::Invalid mod_version: $version"
+            exit 1
+          fi
+          if [[ "$GITHUB_REF" == "refs/heads/main" ]]; then
+            tag="v$version"
+          else
+            tag="v$version-preview"
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+
+      - name: Check whether the release already exists
+        id: existing
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ steps.version.outputs.tag }}
+        shell: bash
+        run: |
+          if gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+            echo "::notice::Release $RELEASE_TAG exists; skipping to protect existing assets. Bump mod_version for the next release."
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Download four Minecraft version artifacts
+        if: steps.existing.outputs.exists == 'false'
+        uses: actions/download-artifact@v4
+        with:
+          pattern: DanmakuChat-*
+          path: release-input
+          merge-multiple: false
+
+      - name: Validate the 4 binaries and 4 source JARs
+        if: steps.existing.outputs.exists == 'false'
+        env:
+          MOD_VERSION: ${{ steps.version.outputs.version }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p release-assets
+          for mc in 1.21.8 1.21.11 26.2 26.3; do
+            dir="release-input/DanmakuChat-$mc"
+            binary="DanmakuChat-$mc-$MOD_VERSION.jar"
+            sources="DanmakuChat-$mc-$MOD_VERSION-sources.jar"
+            test -s "$dir/$binary" || { echo "::error::Missing binary: $binary"; exit 1; }
+            test -s "$dir/$sources" || { echo "::error::Missing sources: $sources"; exit 1; }
+            unzip -tqq "$dir/$binary"
+            unzip -tqq "$dir/$sources"
+            unzip -Z1 "$dir/$binary" | grep -Fx 'fabric.mod.json'
+            unzip -Z1 "$dir/$binary" | grep -Fx 'com/danmakuchat/DanmakuChat.class'
+            unzip -Z1 "$dir/$sources" | grep -Fx 'com/danmakuchat/DanmakuChat.java'
+            cp "$dir/$binary" "$dir/$sources" release-assets/
+          done
+          test "$(find release-assets -maxdepth 1 -name '*.jar' -type f | wc -l)" -eq 8
+          (cd release-assets && sha256sum *.jar > SHA256SUMS.txt)
+          cat > release-notes.md <<'NOTES'
+          ## Minecraft compatibility builds
+
+          This release includes separate Fabric mod binaries and matching
+          source JARs for Minecraft 1.21.8, 1.21.11, 26.2, and 26.3.
+          Install only the binary matching your Minecraft version.
+          The sources JAR is for code inspection, not installation.
+
+          GitHub also provides Source code (zip) and Source code (tar.gz).
+
+          **Experimental:** CI Gradle builds and JAR integrity checks passed,
+          but in-game startup, Mixin application, chat rendering and other-mod
+          compatibility have not yet been verified.
+
+          This code includes AI-assisted changes.
+          Development status: https://github.com/Rangesa/Danmaku-Chat/pull/1
+          NOTES
+
+      - name: Create GitHub Release with all JARs and source archives
+        if: steps.existing.outputs.exists == 'false'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ steps.version.outputs.tag }}
+          MOD_VERSION: ${{ steps.version.outputs.version }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          prerelease_args=()
+          if [[ "$GITHUB_REF" != "refs/heads/main" || "$MOD_VERSION" == *-* ]]; then
+            prerelease_args+=(--prerelease)
+          fi
+          gh release create "$RELEASE_TAG" \
+            release-assets/*.jar release-assets/SHA256SUMS.txt \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "$GITHUB_SHA" \
+            --title "DanmakuChat $MOD_VERSION - Minecraft 1.21.8 / 1.21.11 / 26.2 / 26.3" \
+            --notes-file release-notes.md \
+            "${prerelease_args[@]}"
+          echo "https://github.com/$GITHUB_REPOSITORY/releases/tag/$RELEASE_TAG" >> "$GITHUB_STEP_SUMMARY"
