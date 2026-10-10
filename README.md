@@ -1,5 +1,7 @@
 # DanmakuChat
 
+**マルチバージョン開発版:** Minecraft 1.21.8 / 1.21.11 / 26.2 / 26.3の専用JARを提供しています。4版で実際のMinecraftクライアント起動・ワールド生成・HUD描画の自動テストに成功。ただしMod Menu全機能やマルチプレイヤー実環境は引き続き検証中です。詳しくは[GitHub Releases](https://github.com/Rangesa/Danmaku-Chat/releases)と[検証内容](docs/MULTIVERSION.md)をご覧ください。
+
 Minecraft 1.21.8 (Fabric) 用のニコニコ動画風弾幕チャットオーバーレイ Mod です。
 
 ## 概要
@@ -84,3 +86,8 @@ DanmakuChat は、Minecraft の標準的なチャットシステムを、ニコ�
 ## ライセンス
 
 MIT License
+
+
+## Multi-version development (draft)
+
+The development branch includes experimental separate builds for Minecraft 1.21.8, 1.21.11, 26.2 and 26.3. **These are not released or verified compatibility claims.** See [docs/MULTIVERSION.md](docs/MULTIVERSION.md) for build instructions, porting notes and mandatory verification.
