@@ -53,7 +53,22 @@ jobs:
         shell: bash
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y xvfb libgl1-mesa-dri libgl1 libxrandr2 libxi6 libxcursor1 libxinerama1
+          sudo apt-get install -y xvfb libgl1-mesa-dri libgl1 libxrandr2 libxi6 libxcursor1 libxinerama1 \
+            mesa-vulkan-drivers libvulkan1 vulkan-tools libglx-mesa0 mesa-utils
+          # Minecraft 26.3 uses RenderPearl (SDL3): expose a software Vulkan
+          # driver with the required VK_KHR_surface WSI, instead of the
+          # runner's headless Vulkan ICD that cannot present a window.
+          lvp="$(find /usr/share/vulkan/icd.d -name 'lvp_icd*.json' -print -quit)"
+          if [[ -n "$lvp" ]]; then
+            echo "VK_DRIVER_FILES=$lvp" >> "$GITHUB_ENV"
+          fi
+          echo "SDL_VIDEODRIVER=x11" >> "$GITHUB_ENV"
+          echo "XDG_SESSION_TYPE=x11" >> "$GITHUB_ENV"
+          echo "GALLIUM_DRIVER=llvmpipe" >> "$GITHUB_ENV"
+          # Prefer native GLX if Minecraft/SDL first attempts OpenGL.
+          echo "JAVA_TOOL_OPTIONS=-Dfabric.client.gametest.disableNetworkSynchronizer=true -Dorg.lwjgl.opengl.contextAPI=native" >> "$GITHUB_ENV"
+          echo "Available Mesa Vulkan ICDs:"
+          ls -1 /usr/share/vulkan/icd.d/
       - name: Launch real Fabric Minecraft client with GameTest
         shell: bash
         run: |
