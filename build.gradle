@@ -1,5 +1,6 @@
 plugins {
-    id 'fabric-loom' version '1.17.21'
+    id 'net.fabricmc.fabric-loom' version '1.17.21' apply false
+    id 'net.fabricmc.fabric-loom-remap' version '1.17.21' apply false
     id 'maven-publish'
     id 'org.jetbrains.kotlin.jvm' version '2.2.20' apply false
 }
@@ -16,6 +17,7 @@ if (!targets.containsKey(mcTarget)) {
     throw new GradleException("Unsupported mc_target '${mcTarget}'; choose ${targets.keySet()}")
 }
 def mc = targets[mcTarget]
+apply plugin: mc.modern ? 'net.fabricmc.fabric-loom' : 'net.fabricmc.fabric-loom-remap'
 if (!mc.modern) {
     apply plugin: 'org.jetbrains.kotlin.jvm'
 }
@@ -29,12 +31,18 @@ repositories {
 }
 dependencies {
     minecraft "com.mojang:minecraft:${mcTarget}"
-    if (mc.modern) mappings loom.officialMojangMappings()
-    else mappings "net.fabricmc:yarn:${mc.mappings}:v2"
-    modImplementation "net.fabricmc:fabric-loader:0.19.5"
-    modImplementation "net.fabricmc.fabric-api:fabric-api:${mc.fabric}"
-    modImplementation "com.terraformersmc:modmenu:${mc.modmenu}"
-    if (!mc.modern) implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8'
+    if (mc.modern) {
+        // 26.1+ Minecraft binaries are unobfuscated: no mappings dependency or modImplementation.
+        implementation "net.fabricmc:fabric-loader:0.19.5"
+        implementation "net.fabricmc.fabric-api:fabric-api:${mc.fabric}"
+        implementation "com.terraformersmc:modmenu:${mc.modmenu}"
+    } else {
+        mappings "net.fabricmc:yarn:${mc.mappings}:v2"
+        modImplementation "net.fabricmc:fabric-loader:0.19.5"
+        modImplementation "net.fabricmc.fabric-api:fabric-api:${mc.fabric}"
+        modImplementation "com.terraformersmc:modmenu:${mc.modmenu}"
+        implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8'
+    }
 }
 if (mc.modern) {
     sourceSets.main.java.setSrcDirs(['src/modern/java'])
