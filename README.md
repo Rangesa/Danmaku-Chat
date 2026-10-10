@@ -84,3 +84,8 @@ DanmakuChat は、Minecraft の標準的なチャットシステムを、ニコ�
 ## ライセンス
 
 MIT License
+
+
+## Multi-version development (draft)
+
+The development branch includes experimental separate builds for Minecraft 1.21.8, 1.21.11, 26.2 and 26.3. **These are not released or verified compatibility claims.** See [docs/MULTIVERSION.md](docs/MULTIVERSION.md) for build instructions, porting notes and mandatory verification.
