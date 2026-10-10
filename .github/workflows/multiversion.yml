@@ -36,9 +36,14 @@ jobs:
           path: build/libs/*.jar
           if-no-files-found: error
 
+  client_e2e:
+    name: Verify actual Minecraft client on four versions
+    needs: build
+    uses: ./.github/workflows/client-gametest.yml
+
   release:
     name: GitHub Release (Minecraft binary and source jars)
-    needs: build
+    needs: [build, client_e2e]
     if: >-
       github.event_name == 'push' &&
       (github.ref == 'refs/heads/main' ||
@@ -206,7 +211,7 @@ jobs:
 
   publish_version_refs:
     name: Publish mc/* branches and immutable version tags
-    needs: [build, version_source_build]
+    needs: [build, version_source_build, client_e2e]
     if: >-
       github.event_name == 'push' &&
       (github.ref == 'refs/heads/main' ||

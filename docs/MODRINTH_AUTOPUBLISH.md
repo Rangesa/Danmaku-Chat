@@ -10,7 +10,7 @@
 
 安全のため **自動公開はOFF** です。公開ワークフローはリポジトリの main ブランチに合流してから有効になります。PRや開発ブランチでは認証トークンを扱いません。
 
-このプロジェクトでは1.21.8 / 1.21.11 / 26.2 / 26.3 のGradleビルドが通りましたが、Minecraft実機での起動、チャット、Mixin適用、HUD、設定画面、他Modとの相性はまだ未検証です。ビルド成功のみで「動作確認済み」と主張しないでください。
+本プロジェクトは1.21.8 / 1.21.11 / 26.2 / 26.3 のGradleビルドとFabric Client GameTest（実クライアントの起動・ワールド生成・合成チャット・HUD描画）に成功しています。一方、実マルチプレイヤーの署名付きチャット、Mod Menuの全操作、他Modとの互換性などは未検証で、完全動作保証とは区別してください。
 
 ## 初回に一度だけ行う設定
 
@@ -24,7 +24,7 @@
 
 ## 技術的な仕様
 
-- GitHub Actionsで4種類の独立したMinecraftバージョンごとにGradleビルドします。マトリクスのどれか一つが失敗すれば全体の公開ジョブは開始しません。
+- GitHub Actionsで4種類の独立したMinecraftバージョンごとにGradleビルドします。マトリクスのどれか一つが失敗すれば全体の公開ジョブは開始しません。加えて全4バージョンの実Minecraft Client GameTestが成功しない限り公開ジョブは開始しません。
 - 配布用JARを1つに絞り、fabric.mod.json のMod ID、Modバージョン、Minecraft依存のバージョン一致などを検査します。1.21.11固有のMixinリストと、26.xのMod Menuクラスも検査します。
 - Modrinth v2 APIでプロジェクトID TIlGeskT の存在・ソースURL・承認状態を確認し、POST /version にJARをアップロードします。
 - Modrinth依存関係には Fabric API（required）と Mod Menu（optional）を設定します。

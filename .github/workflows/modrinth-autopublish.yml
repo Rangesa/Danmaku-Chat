@@ -69,8 +69,13 @@ jobs:
           if-no-files-found: error
           retention-days: 7
 
-  publish:
+  client_e2e:
     needs: [gate, build]
+    if: needs.gate.outputs.enabled == 'true'
+    uses: ./.github/workflows/client-gametest.yml
+
+  publish:
+    needs: [gate, build, client_e2e]
     if: needs.gate.outputs.enabled == 'true'
     runs-on: ubuntu-latest
     steps:

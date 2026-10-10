@@ -1,23 +1,7 @@
 name: Minecraft Client GameTest (real launch)
 
 on:
-  push:
-    branches:
-      - feature/fabric-multiversion-26x
-    paths:
-      - 'src/**'
-      - 'build.gradle'
-      - 'gradle.properties'
-      - 'settings.gradle'
-      - '.github/workflows/client-gametest.yml'
-  pull_request:
-    branches: [main]
-    paths:
-      - 'src/**'
-      - 'build.gradle'
-      - 'gradle.properties'
-      - 'settings.gradle'
-      - '.github/workflows/client-gametest.yml'
+  workflow_call:
   workflow_dispatch:
 
 permissions:
