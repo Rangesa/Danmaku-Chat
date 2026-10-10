@@ -45,6 +45,14 @@ class PublisherTests(unittest.TestCase):
             (Path(tmp) / "DanmakuChat-sources.jar").write_bytes(b"sources")
             self.assertEqual(path, find_jar(tmp))
 
+    def test_exact_jar_name_does_not_reject_dev_version(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            jar = self.create_jar(tmp, "26.3")
+            expected = Path(tmp) / "DanmakuChat-26.3-1.1.0-dev.jar"
+            jar.rename(expected)
+            (Path(tmp) / "DanmakuChat-26.3-1.1.0-dev-sources.jar").write_bytes(b"other")
+            self.assertEqual(find_jar(tmp, "26.3", "1.1.0-dev"), expected)
+
     def test_ambiguous_jars_rejected(self):
         with tempfile.TemporaryDirectory() as tmp:
             self.create_jar(tmp, "26.3")
