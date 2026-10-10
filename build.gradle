@@ -57,6 +57,11 @@ processResources {
     if (mc.modern) {
         // Reuse localization and original icon without copying large binary assets.
         from('src/main/resources') { include 'assets/**' }
+    } else if (mcTarget == '1.21.11') {
+        // Minecraft 1.21.11 changed ChatHud#render's descriptor; switch the Mixin class.
+        filesMatching('danmakuchat.mixins.json') {
+            filter { String line -> line.replace('"ChatHudMixin"', '"ChatHudMixin12111"') }
+        }
     }
 }
 tasks.withType(JavaCompile).configureEach {
