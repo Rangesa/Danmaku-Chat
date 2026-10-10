@@ -5,7 +5,7 @@ It contains only the implementation for Minecraft **26.2**, including its own
 Gradle configuration, mixin/resources, and the Java/Kotlin source code.
 
 Canonical multi-version source: https://github.com/Rangesa/Danmaku-Chat/tree/feature/fabric-multiversion-26x
-Generated from canonical revision: [\`c518259ac2ed462ee00c8623982cf343251ee01f\`](https://github.com/Rangesa/Danmaku-Chat/commit/c518259ac2ed462ee00c8623982cf343251ee01f)
+Generated from canonical revision: [\`8ac7f66da9bb66476637a85a5a7f355396bf53b0\`](https://github.com/Rangesa/Danmaku-Chat/commit/8ac7f66da9bb66476637a85a5a7f355396bf53b0)
 Matching immutable version tag: [\`mc-26.2-v1.1.0-dev\`](https://github.com/Rangesa/Danmaku-Chat/tree/mc-26.2-v1.1.0-dev)
 Binary/source JAR release: https://github.com/Rangesa/Danmaku-Chat/releases/tag/v1.1.0-dev-preview
 
