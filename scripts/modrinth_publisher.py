@@ -27,10 +27,17 @@ def mod_version():
     return match.group(1)
 
 
-def find_jar(directory):
+def find_jar(directory, target=None, version=None):
+    directory = Path(directory)
+    if target and version:
+        expected = directory / f"DanmakuChat-{target}-{version}.jar"
+        if not expected.is_file():
+            matches = [p.name for p in directory.glob("*.jar")]
+            raise ValueError(f"Expected exact release JAR {expected}; found: {matches}")
+        return expected
     jar_files = [
-        p for p in Path(directory).glob("*.jar")
-        if not p.stem.endswith(("-sources", "-dev", "-javadoc", "-plain", "-all"))
+        p for p in directory.glob("*.jar")
+        if not p.stem.endswith(("-sources", "-javadoc", "-plain", "-all"))
     ]
     if len(jar_files) != 1:
         raise ValueError(f"Expected one distributable JAR in {directory}, found {len(jar_files)}")
@@ -120,7 +127,7 @@ def multipart(meta, jar):
 
 
 def publish_target(directory, target, version, upload=False):
-    jar = find_jar(directory)
+    jar = find_jar(directory, target, version)
     digest = verify_jar(jar, target, version)
     meta = metadata_for(target, version)
     print(f"Prepared {target} {jar.name}: {digest[:20]}... ({meta['version_number']})")
