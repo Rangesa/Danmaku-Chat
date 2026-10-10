@@ -7,10 +7,10 @@ import com.mojang.brigadier.arguments.FloatArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
-import net.minecraft.text.Text;
+import net.minecraft.network.chat.Component;
 
-import static net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.argument;
-import static net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.literal;
+import static net.fabricmc.fabric.api.client.command.v2.ClientCommands.argument;
+import static net.fabricmc.fabric.api.client.command.v2.ClientCommands.literal;
 
 /**
  * DanmakuChat settings command.
@@ -47,70 +47,70 @@ public class DanmakuCommand {
         );
     }
 
-    private static Text getEnableStatusText(boolean enabled) {
-        return Text.translatable(enabled ? "danmakuchat.value.enabled" : "danmakuchat.value.disabled");
+    private static Component getEnableStatusText(boolean enabled) {
+        return Component.translatable(enabled ? "danmakuchat.value.enabled" : "danmakuchat.value.disabled");
     }
 
     private static int showStatus(CommandContext<FabricClientCommandSource> ctx) {
         DanmakuConfig config = DanmakuConfig.getInstance();
         FabricClientCommandSource source = ctx.getSource();
 
-        source.sendFeedback(Text.translatable("danmakuchat.command.status.main", getEnableStatusText(config.isEnabled())));
-        source.sendFeedback(Text.translatable("danmakuchat.command.status.system", getEnableStatusText(config.shouldShowSystemChat())));
-        source.sendFeedback(Text.translatable("danmakuchat.command.status.vanilla", getEnableStatusText(!config.shouldHideVanillaChat())));
-        source.sendFeedback(Text.translatable("danmakuchat.command.status.speed", config.getScrollSpeed()));
-        source.sendFeedback(Text.translatable("danmakuchat.command.status.lanes", config.getMaxLanes()));
-        source.sendFeedback(Text.translatable("danmakuchat.command.status.opacity", config.getOpacity()));
-        source.sendFeedback(Text.translatable("danmakuchat.command.status.font_size", config.getFontSize()));
+        source.sendFeedback(Component.translatable("danmakuchat.command.status.main", getEnableStatusText(config.isEnabled())));
+        source.sendFeedback(Component.translatable("danmakuchat.command.status.system", getEnableStatusText(config.shouldShowSystemChat())));
+        source.sendFeedback(Component.translatable("danmakuchat.command.status.vanilla", getEnableStatusText(!config.shouldHideVanillaChat())));
+        source.sendFeedback(Component.translatable("danmakuchat.command.status.speed", config.getScrollSpeed()));
+        source.sendFeedback(Component.translatable("danmakuchat.command.status.lanes", config.getMaxLanes()));
+        source.sendFeedback(Component.translatable("danmakuchat.command.status.opacity", config.getOpacity()));
+        source.sendFeedback(Component.translatable("danmakuchat.command.status.font_size", config.getFontSize()));
 
         return 1;
     }
 
     private static int setEnabled(CommandContext<FabricClientCommandSource> ctx, boolean enabled) {
         DanmakuConfig.getInstance().setEnabled(enabled);
-        ctx.getSource().sendFeedback(Text.translatable("danmakuchat.command.set.main", getEnableStatusText(enabled)));
+        ctx.getSource().sendFeedback(Component.translatable("danmakuchat.command.set.main", getEnableStatusText(enabled)));
         return 1;
     }
 
     private static int setSystemChat(CommandContext<FabricClientCommandSource> ctx, boolean show) {
         DanmakuConfig.getInstance().setShowSystemChat(show);
-        ctx.getSource().sendFeedback(Text.translatable("danmakuchat.command.set.system", getEnableStatusText(show)));
+        ctx.getSource().sendFeedback(Component.translatable("danmakuchat.command.set.system", getEnableStatusText(show)));
         return 1;
     }
 
     private static int setSpeed(CommandContext<FabricClientCommandSource> ctx, float speed) {
         DanmakuConfig.getInstance().setScrollSpeed(speed);
-        ctx.getSource().sendFeedback(Text.translatable("danmakuchat.command.set.speed", speed));
+        ctx.getSource().sendFeedback(Component.translatable("danmakuchat.command.set.speed", speed));
         return 1;
     }
 
     private static int setLanes(CommandContext<FabricClientCommandSource> ctx, int lanes) {
         DanmakuConfig.getInstance().setMaxLanes(lanes);
-        ctx.getSource().sendFeedback(Text.translatable("danmakuchat.command.set.lanes", lanes));
+        ctx.getSource().sendFeedback(Component.translatable("danmakuchat.command.set.lanes", lanes));
         return 1;
     }
 
     private static int setOpacity(CommandContext<FabricClientCommandSource> ctx, float opacity) {
         DanmakuConfig.getInstance().setOpacity(opacity);
-        ctx.getSource().sendFeedback(Text.translatable("danmakuchat.command.set.opacity", opacity));
+        ctx.getSource().sendFeedback(Component.translatable("danmakuchat.command.set.opacity", opacity));
         return 1;
     }
 
     private static int setFontSize(CommandContext<FabricClientCommandSource> ctx, float size) {
         DanmakuConfig.getInstance().setFontSize(size);
-        ctx.getSource().sendFeedback(Text.translatable("danmakuchat.command.set.font_size", size));
+        ctx.getSource().sendFeedback(Component.translatable("danmakuchat.command.set.font_size", size));
         return 1;
     }
 
     private static int setVanillaChat(CommandContext<FabricClientCommandSource> ctx, boolean show) {
         DanmakuConfig.getInstance().setHideVanillaChat(!show);
-        ctx.getSource().sendFeedback(Text.translatable("danmakuchat.command.set.vanilla", getEnableStatusText(show)));
+        ctx.getSource().sendFeedback(Component.translatable("danmakuchat.command.set.vanilla", getEnableStatusText(show)));
         return 1;
     }
 
     private static int reload(CommandContext<FabricClientCommandSource> ctx) {
         DanmakuConfig.getInstance().save();
-        ctx.getSource().sendFeedback(Text.translatable("danmakuchat.command.reload"));
+        ctx.getSource().sendFeedback(Component.translatable("danmakuchat.command.reload"));
         return 1;
     }
 }

@@ -1,13 +1,13 @@
 package com.danmakuchat.danmaku;
 
 import com.danmakuchat.config.DanmakuConfig;
-import net.minecraft.text.Text;
+import net.minecraft.network.chat.Component;
 
 /**
  * Represents a single danmaku message that flows across the screen.
  */
 public class DanmakuMessage {
-    private final Text message;
+    private final Component message;
     private final long creationTime;
     private float posX;
     private float posY;
@@ -20,7 +20,7 @@ public class DanmakuMessage {
 
 
     // コンストラクタを変更
-    public DanmakuMessage(Text message, float targetDuration) {
+    public DanmakuMessage(Component message, float targetDuration) {
         this.message = message;
         this.creationTime = System.currentTimeMillis();
         this.targetDuration = targetDuration; // 目標時間を保持
@@ -30,7 +30,7 @@ public class DanmakuMessage {
         this.calculatedSpeed = 0.0f;
     }
 
-    public Text getMessage() {
+    public Component getMessage() {
         return message;
     }
 
