@@ -76,3 +76,21 @@ publishing {
         }
     }
 }
+
+
+// Opt-in: only real client tests load the Fabric GameTest harness.
+// Ordinary build/release JARs stay free of test classes and metadata.
+if (providers.gradleProperty('enable_client_gametests').map { it.toBoolean() }.orElse(false).get()) {
+    fabricApi {
+        configureTests {
+            createSourceSet = true
+            modId = 'danmakuchat-client-gametest'
+            enableGameTests = false
+            enableClientGameTests = true
+            eula = true
+        }
+    }
+    sourceSets.gametest.java.setSrcDirs([
+        mc.modern ? 'src/gametest/modern/java' : 'src/gametest/legacy/java'
+    ])
+}
