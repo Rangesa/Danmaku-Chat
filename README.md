@@ -5,7 +5,7 @@ It contains only the implementation for Minecraft **1.21.8**, including its own
 Gradle configuration, mixin/resources, and the Java/Kotlin source code.
 
 Canonical multi-version source: https://github.com/Rangesa/Danmaku-Chat/tree/feature/fabric-multiversion-26x
-Generated from canonical revision: [\`052e114af4c94505db5eeb3bed7a998f8f6a1286\`](https://github.com/Rangesa/Danmaku-Chat/commit/052e114af4c94505db5eeb3bed7a998f8f6a1286)
+Generated from canonical revision: [\`c518259ac2ed462ee00c8623982cf343251ee01f\`](https://github.com/Rangesa/Danmaku-Chat/commit/c518259ac2ed462ee00c8623982cf343251ee01f)
 Matching immutable version tag: [\`mc-1.21.8-v1.1.0-dev\`](https://github.com/Rangesa/Danmaku-Chat/tree/mc-1.21.8-v1.1.0-dev)
 Binary/source JAR release: https://github.com/Rangesa/Danmaku-Chat/releases/tag/v1.1.0-dev-preview
 
