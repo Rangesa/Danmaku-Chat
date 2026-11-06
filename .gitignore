@@ -51,3 +51,5 @@ remappedSrc/
 *.log
 *.lock
 *.tmp
+
+remappedClient/

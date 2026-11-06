@@ -3,8 +3,7 @@
   "minVersion": "0.8",
   "package": "com.danmakuchat.mixin",
   "compatibilityLevel": "JAVA_21",
-  "mixins": [
-  ],
+  "mixins": [],
   "client": [
     "ChatHudAccessor",
     "ChatHudMixin"
