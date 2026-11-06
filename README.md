@@ -1,3 +1,5 @@
+> Minecraft 26.2 までの版別ビルド・導入方法: [対応バージョン](MINECRAFT_VERSIONS.md)。
+
 # DanmakuChat
 Minecraft 1.21.8 (Fabric) 用のニコニコ動画風弾幕チャットオーバーレイ Mod です。
 
